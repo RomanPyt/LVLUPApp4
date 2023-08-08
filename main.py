@@ -33,18 +33,13 @@ db4 = Database4()
 db5 = Database5()
 
 from KV import KV
-import json
 Builder.load_string(KV)
 
 from kivymd.uix.screen import MDScreen
 from kivy.uix.screenmanager import NoTransition
 
-from kivy.core.window import Window
-Window.size = (510, 840)
+from kivy.utils import platform
 
-from kivymd.uix.pickers import MDDatePicker # Here, instead of kivymd,uix.picker
-
-# add the following just under the imports
 if platform == "android":
     from android.permissions import request_permissions, Permission
     request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE])
@@ -135,8 +130,6 @@ class DemoApp(MDApp):
 
 
     def new_task_name(self):
-        print(self.sm.get_screen('newtask').ids.task_name.text)
-        print(self.sm.get_screen('newtask').ids.task_exp.text)
         if self.sm.get_screen('newtask').ids.task_name.text != '' and self.sm.get_screen('newtask').ids.task_exp.text != '' and self.sm.get_screen('newtask').ids.task_exp.text.isnumeric():
             if int(self.sm.get_screen('newtask').ids.task_exp.text) <= 500:
                 if self.sm.get_screen('newtask').ids.monday_switch.active:
@@ -262,10 +255,7 @@ class DemoApp(MDApp):
         instance.active = True
 
     def task_press(self, instance):
-        print(instance.id)
-        print(instance.group)
         db.mark_task_as_complete(instance.id)
-        print(instance.active)
         if instance.active == True:
             level_list = db4.get_lvl()
             if level_list != []:
@@ -315,7 +305,23 @@ class DemoApp(MDApp):
             self.delete_task_lay()
             self.build_task(self.text_day)
             self.build_level()
-
+            MDSnackbar(
+                MDLabel(
+                    text="Congratulations",
+                    size_hint_min_x=.6,
+                    theme_text_color="Custom",
+                    text_color="#393231",
+                ),
+                MDLabel(
+                    text=f'+ {instance.group} exp.',
+                    theme_text_color="Custom",
+                    text_color="#393231",
+                ),
+                y=dp(24),
+                pos_hint={"center_x": 0.5, 'center_y': .2},
+                size_hint_x=0.7,
+                md_bg_color="#E8D8D7",
+            ).open()
 
 
 
@@ -323,7 +329,6 @@ class DemoApp(MDApp):
         self.build_task(self.text_day)
 
     def del_task(self, instance):
-        print(instance.id)
         db.delete_task(instance.id)
 
         self.delete_task_lay()
@@ -375,7 +380,6 @@ class DemoApp(MDApp):
 
 
     def menu_callback(self, text_item):
-        print(text_item)
         self.drop_menu.dismiss()
         self.text_day = text_item
         if self.text_day == 'monday':
@@ -426,7 +430,6 @@ class DemoApp(MDApp):
         :type date_range: <class 'list'>;
         '''
         self.sm.get_screen('newquest').ids.date_button.text = str(value)
-        print(value)
 
     def on_cancel(self, instance, value):
         '''Events called when the "CANCEL" dialog box button is clicked.'''
@@ -441,11 +444,8 @@ class DemoApp(MDApp):
         )
         date_dialog.bind(on_save=self.on_save, on_cancel=self.on_cancel)
         date_dialog.open()
-        #print("'_anim_alpha', '_anim_duration', '_background_origin', '_background_x', '_background_y', '_calendar_layout', '_date_label_text', '_input_date_dialog_open', '_is_open', '_md_bg_color', '_origin_line_color', '_origin_md_bg_color', '_scale_calendar_layout', '_scale_x', '_scale_y', '_scale_year_layout', '_shift_dialog_height', '_window', 'accent_color', 'anchor_x', 'anchor_y', 'angle', 'attach_to', 'auto_dismiss', 'background', 'background_color', 'background_hue', 'background_origin', 'background_palette', 'border', 'center', 'center_x', 'center_y', 'children', 'cls', 'date_range_text_error', 'day', 'device_ios', 'disabled', 'elevation', 'font_name', 'height', 'helper_text', 'hide_duration', 'hide_transition', 'ids', 'input_field_background_color', 'input_field_background_color_focus', 'input_field_background_color_normal', 'input_field_cls', 'input_field_text_color', 'input_field_text_color_focus', 'input_field_text_color_normal', 'line_color', 'line_width', 'max_date', 'max_year', 'md_bg_color', 'min_date', 'min_year', 'mode', 'month', 'motion_filter', 'opacity', 'opposite_colors', 'overlay_color', 'padding', 'parent', 'pos', 'pos_hint', 'primary_color', 'radius', 'right', 'rotate_value_angle', 'rotate_value_axis', 'scale_value_center', 'scale_value_x', 'scale_value_y', 'scale_value_z', 'scale_x', 'scale_y', 'sel_day', 'sel_month', 'sel_year', 'selector_color', 'shadow_color', 'shadow_offset', 'shadow_radius', 'shadow_softness', 'shadow_softness_size', 'show_duration', 'show_transition', 'size', 'size_hint', 'size_hint_max', 'size_hint_max_x', 'size_hint_max_y', 'size_hint_min', 'size_hint_min_x', 'size_hint_min_y', 'size_hint_x', 'size_hint_y', 'specific_secondary_text_color', 'specific_text_color', 'text_button_color', 'text_color', 'text_current_color', 'text_toolbar_color', 'text_weekday_color', 'theme_cls', 'title', 'title_input', 'top', 'widget_style', 'width', 'x', 'y', 'year'")
 
     def new_quest_name(self):
-        print(self.sm.get_screen('newquest').ids.quest_name.text)
-        print(self.sm.get_screen('newquest').ids.quest_exp.text)
         db2.create_quest(self.sm.get_screen('newquest').ids.quest_name.text,
                          self.sm.get_screen('newquest').ids.quest_exp.text,
                          self.sm.get_screen('newquest').ids.date_button.text)
@@ -482,19 +482,75 @@ class DemoApp(MDApp):
         self.sm.get_screen('questscreen').add_widget(self.scroll2)
 
     def quest_press(self, instance):
-        print(instance.id)
+        level_list = db4.get_lvl()
+        if level_list != []:
+            self.lvl_text = level_list[-1][0]
+            self.my_max = level_list[-1][2]
+            self.my_value = level_list[-1][1]
+        else:
+            self.lvl_text = '0'
+            self.my_max = 1000
+            self.my_value = 0
 
+        self.my_value += int(instance.id)
+        while self.my_value >= self.my_max:
+            self.my_value = self.my_value - self.my_max
+            self.lvl_text = str(int(self.lvl_text) + 1)
+            if int(self.lvl_text) >= 5:
+                self.my_max = 1000
+            elif int(self.lvl_text) >= 10:
+                self.my_max = 2000
+            elif int(self.lvl_text) >= 15:
+                self.my_max = 2500
+            elif int(self.lvl_text) >= 20:
+                self.my_max = 3500
+            elif int(self.lvl_text) >= 25:
+                self.my_max = 4000
+            elif int(self.lvl_text) >= 30:
+                self.my_max = 5000
+            elif int(self.lvl_text) >= 35:
+                self.my_max = 5500
+            elif int(self.lvl_text) >= 40:
+                self.my_max = 6500
+            elif int(self.lvl_text) >= 45:
+                self.my_max = 7000
+            elif int(self.lvl_text) >= 50:
+                self.my_max = 8000
 
+        instance.active = True
+        db4.delete_db()
+        db4.create_level_table()
+        db4.create_level(self.lvl_text, self.my_value, self.my_max)
+        self.build_level()
+        self.sm.get_screen('profilescreen').ids.progressbar.max = self.my_max
+        self.sm.get_screen('profilescreen').ids.progressbar.value = self.my_value
+        self.sm.get_screen('profilescreen').ids.lvl_text.text = self.lvl_text
 
+        self.build_level()
 
         db2.delete_quest(instance.text)
         self.delete_quest_lay()
         self.build_quest()
-
+        MDSnackbar(
+            MDLabel(
+                text="Congratulations",
+                size_hint_min_x=.6,
+                theme_text_color="Custom",
+                text_color="#393231",
+            ),
+            MDLabel(
+                text=f'+ {instance.id} exp.',
+                theme_text_color="Custom",
+                text_color="#393231",
+            ),
+            y=dp(24),
+            pos_hint={"center_x": 0.5, 'center_y': .2},
+            size_hint_x=0.7,
+            md_bg_color="#E8D8D7",
+        ).open()
 
 
     def del_quest(self, instance):
-        print(instance.id)
         db2.delete_quest(instance.id)
         self.delete_quest_lay()
         self.build_quest()
@@ -537,7 +593,6 @@ class DemoApp(MDApp):
 
     def build_level(self):
         list = db4.get_lvl()
-        print(list)
         if list != []:
             self.sm.get_screen('profilescreen').ids.progressbar.max = list[-1][2]
             self.sm.get_screen('profilescreen').ids.progressbar.value = list[-1][1]
@@ -549,4 +604,6 @@ class DemoApp(MDApp):
 
 
 
-DemoApp().run()
+if __name__ == '__main__':
+    app = DemoApp()
+    app.run()
