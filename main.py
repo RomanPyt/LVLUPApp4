@@ -42,6 +42,13 @@ from kivy.uix.screenmanager import NoTransition
 from kivy.core.window import Window
 Window.size = (510, 840)
 
+from kivymd.uix.pickers import MDDatePicker # Here, instead of kivymd,uix.picker
+
+# add the following just under the imports
+if platform == "android":
+    from android.permissions import request_permissions, Permission
+    request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE])
+
 
 class TaskScreen(MDScreen):
     pass
